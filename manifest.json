@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "PhishGuard AI",
+  "version": "2.1",
+  "description": "Real-time AI phishing and scam detection for Gmail and the web.",
+  "permissions": ["storage", "identity", "alarms", "notifications"],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://gmail.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "http://localhost:8000/*"
+  ],
+  "oauth2": {
+    "client_id": "1031001681970-kje5d0vmri6q1fcpuilj5v3rdmi6q4u2.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/gmail.readonly"]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    { "matches": ["https://mail.google.com/*"], "js": ["content.js"] }
+  ]
+}

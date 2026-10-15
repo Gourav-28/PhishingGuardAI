@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PhishGuard AI - Local LLM Threat Engine</title>
+<style>
+  :root { box-sizing: border-box; color-scheme: dark; }
+  *, *:before, *:after { box-sizing: inherit; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+  }
+  .max-w-5xl { max-width: 1024px; margin: 0 auto; }
+  .space-y-6 > * + * { margin-top: 24px; }
+  .space-y-4 > * + * { margin-top: 16px; }
+  .space-y-1.5 > * + * { margin-top: 6px; }
+
+  /* Cards & Layout */
+  .card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .banner {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid #334155;
+    padding: 16px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Form Elements */
+  label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+  input[type="text"], textarea {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 12px;
+    color: #e2e8f0;
+    outline: none;
+  }
+  input[type="text"]:focus, textarea:focus { border-color: #38bdf8; }
+  textarea { resize: none; font-family: inherit; }
+  .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+  /* Buttons */
+  .btn-group { display: flex; gap: 8px; }
+  .btn-primary {
+    flex: 1;
+    background: #dc2626;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #ef4444; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: #334155;
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-secondary:hover { background: #475569; }
+  
+  .btn-auth {
+    background: #0284c7;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-auth:hover { background: #0369a1; }
+
+  /* Status & Badges */
+  .status-tag {
+    font-size: 12px;
+    padding: 6px 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+  }
+  .err-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+
+  /* Result Telemetry Display */
+  .res-card {
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .res-phish { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+  .res-safe { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.4); }
+
+  /* Circular Threat Score Meter */
+  .meter-container { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+  .meter-svg { transform: rotate(-90deg); width: 100px; height: 100px; }
+  .meter-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .meter-score { font-size: 20px; font-weight: 900; }
+  .meter-label { font-size: 8px; text-transform: uppercase; color: #94a3b8; font-weight: 700; }
+
+  .empty-state {
+    height: 240px;
+    border: 1px dashed #334155;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    padding: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="max-w-5xl space-y-6">
+  <!-- Top Banner Status -->
+  <div class="banner">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="font-size: 24px;">🛡️</div>
+      <div>
+        <h1 style="margin: 0; font-size: 16px; font-weight: 700;">PhishGuard AI Command Center</h1>
+        <p style="margin: 2px 0 0 0; font-size: 12px; color: #94a3b8;">Powered by Local Python Server &amp; Ollama (llama3.2)</p>
+      </div>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button id="signin-btn" class="btn-auth">🔐 Connect Google Inbox</button>
+      <div id="backend-status" class="status-tag font-mono">Checking backend status...</div>
+    </div>
+  </div>
+
+  <!-- Main Scanner Grid -->
+  <div class="grid-2">
+    <!-- Input Panel -->
+    <div class="card space-y-4">
+      <div style="font-weight: 600; font-size: 14px; color: #f8fafc; display: flex; align-items: center; gap: 6px;">
+        🚨 Test Email or Message Text
+      </div>
+      
+      <div>
+        <label>Sender Email Address / Header</label>
+        <input type="text" id="sender-input" class="font-mono" value="security@account-apple-support.net" placeholder="e.g. alert@paypal-secure-update.com">
+      </div>
+
+      <div>
+        <label>Message Body / Content</label>
+        <textarea id="text-input" rows="6" placeholder="Paste suspicious email text, SMS, or link here...">URGENT: Your Apple ID has been locked due to suspicious login attempts from Russia. Verify your credentials immediately within 24 hours at http://apple-id-verify-secure.com or face permanent account termination.</textarea>
+      </div>
+
+      <div class="btn-group">
+        <button id="scan-btn" class="btn-primary">Scan via Local LLM</button>
+        <button id="sample-btn" class="btn-secondary">Load Sample</button>
+      </div>
+
+      <div id="err-box" class="err-box" style="display: none;"></div>
+    </div>
+
+    <!-- Results Analysis Panel -->
+    <div class="card space-y-4" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 16px; color: #38bdf8;">
+          📊 Local AI Threat Telemetry
+        </div>
+
+        <div id="results-container">
+          <div class="empty-state">
+            <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+            <p style="margin: 0;">Run a text scan on the left to view deep AI reasoning, threat scores, and extracted URL telemetry from your local Ollama instance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; border: 1px solid rgba(51, 65, 85, 0.6); font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between;">
+        <span>Engine: Python HTTP Backend</span>
+        <span style="color: #34d399;" class="font-mono">100% Private / Local</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
