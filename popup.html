@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PhishGuard AI</title>
+  <style>
+    body { width: 340px; margin: 0; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #0f172a; color: #f8fafc; }
+    h2 { font-size: 16px; margin: 0 0 12px; color: #38bdf8; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .label { margin: 0 0 4px; font-size: 12px; color: #94a3b8; }
+    .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .dot-green { background: #4ade80; } .dot-red { background: #f87171; } .dot-gray { background: #64748b; }
+    textarea { width: 100%; box-sizing: border-box; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 4px; padding: 6px; font-size: 12px; resize: none; margin-bottom: 8px; }
+    textarea:focus { outline: none; border-color: #38bdf8; }
+    button { width: 100%; background: #0284c7; color: #fff; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; margin-bottom: 8px; }
+    button:hover { background: #0369a1; } button:disabled { opacity: .5; cursor: not-allowed; }
+    .secondary { background: #334155; } .secondary:hover { background: #475569; }
+    #quick-result-box { display: none; font-size: 12px; padding: 8px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; }
+    #recent-list { max-height: 170px; overflow-y: auto; font-size: 11px; }
+    .item { padding: 6px 0; border-bottom: 1px solid #334155; }
+    .item:last-child { border-bottom: none; }
+    .item .meta { color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .v-phishing { color: #f87171; font-weight: bold; } .v-suspicious { color: #fbbf24; font-weight: bold; } .v-safe { color: #4ade80; font-weight: bold; }
+    label.chk { font-size: 12px; color: #cbd5e1; display: flex; gap: 6px; align-items: center; }
+  </style>
+</head>
+<body>
+  <h2>🛡️ PhishGuard AI Shield</h2>
+
+  <div class="card">
+    <div class="row"><span class="label">Local backend</span><span id="popup-backend-status">Checking...</span></div>
+    <div class="row"><span class="label">Gmail</span><span id="popup-gmail-status">Checking...</span></div>
+    <div class="row"><span class="label">Last inbox check</span><span id="popup-last-scan">—</span></div>
+    <div id="popup-status-line" class="label" style="margin-top:6px;word-break:break-word">…</div>
+    <button id="popup-signin" style="margin-top:6px">🔐 Connect Google Inbox</button>
+    <button id="scan-now-btn" class="secondary">Scan inbox now</button>
+    <label class="chk"><input type="checkbox" id="notify-safe"> Also notify for safe emails</label>
+  </div>
+
+  <div class="card">
+    <p class="label">Recently scanned emails</p>
+    <div id="recent-list"><span class="label">Nothing scanned yet.</span></div>
+  </div>
+
+  <div class="card">
+    <p class="label">Quick text threat scan</p>
+    <textarea id="quick-text-input" rows="3" placeholder="Paste suspicious message here..."></textarea>
+    <button id="quick-scan-btn">Scan Message</button>
+    <div id="quick-result-box"></div>
+  </div>
+
+  <button id="open-dashboard" class="secondary">Open Full Dashboard</button>
+  <script src="popup.js"></script>
+</body>
+</html>
